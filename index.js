@@ -3,72 +3,58 @@ const inquirer = require("inquirer");
 const axios = require("axios");
 
 
-inquirer
-  .prompt({
-    message: "Enter your GitHub username:",
-    name: "username"
-  })
-  .then(function({ username }) {
-    const queryUrl = `https://api.github.com/users/${username}/repos?per_page=100`;
+const questions = [
+    {
+        type: "input",
+        message: "What is your GitHub username?",
+        name: "githubUsername"
+    },
+    {
+        type: "input",
+        message: "What is your email?",
+        name: "userEmail"
+    },
+    {
+        type: "input",
+        message: "What is your Project Title?",
+        name: "projectTitle"
+    },
+    {
+        type: "input",
+        message: "Description of Project",
+        name: "description",
+    },
+    {
+        type: "input",
+        message: "Installation Instructions",
+        name: "install",
+    },
+    {
+        type: "input",
+        message: "License",
+        name: "license",
+    },
+];
 
-    axios.get(queryUrl).then(function(res) {
-      const repoNames = res.data.map(function(repo) {
-        return repo.name;
-      });
+function getGitInfo() {
+    inquirer.prompt({
+        type: "input",
+        message: "Enter your GitHub username:",
+        name: "username",
+    }).then(function ({ username }) {
+        const queryUrl = `https://api.github.com/users/${username}?access_token=`;
 
-      const repoNamesStr = repoNames.join("\n");
+        axios.get(queryUrl).then(function (res) {
+            const profilePic = res.data.avatar_url;
+            const userEmail = res.data.email;
 
-      fs.writeFile("repos.txt", repoNamesStr, function(err) {
-        if (err) {
-          throw err;
-        }
 
-        console.log(`Saved ${repoNames.length} repos`);
-      });
+            fs.writeFile("repos.txt", profilePic, userEmail, function (err) {
+                if (err) {
+                    throw err;
+                }
+
+            });
+        });
     });
-  });
-
-
----------------------------------------
-
-inquirer.prompt([{
-    type: "input",
-    message: "What is your name?",
-    name: "name",
-},
-{
-    type: "input",
-    message: "Where are you located?",
-    name: "location",
-},
-{
-    type: "input",
-    message: "Tell me about yourself.",
-    name: "bio",
-},
-{
-    type: "input",
-    message: "What is your github URL?",
-    name: "github",
-},
-]).then(answers => {
-    const bioAnswers =
-    `<!DOCTYPE html>
-    <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Document</title>
-    </head>
-    <body>
-        <div class="rychea">
-            <p>${answers.name}</p>
-            <p>${answers.location}</p>
-            <p>${answers.bio}</p>
-            <p>${answers.github}</p>
-        </div>
-        
-    </body>
-    </html>`;
-    fs.writeFile("testdex.html", bioAnswers, () => console.log("File Written"))
-})
+};
