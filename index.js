@@ -1,23 +1,24 @@
 const fs = require("fs");
+const path = require("path");
 const inquirer = require("inquirer");
-const axios = require("axios");
+const generateMarkdown = require("./generate.js");
 
 
 const questions = [
     {
         type: "input",
         message: "What is your GitHub username?",
-        name: "githubUsername"
+        name: "github"
     },
     {
         type: "input",
         message: "What is your email?",
-        name: "userEmail"
+        name: "email"
     },
     {
         type: "input",
         message: "What is your Project Title?",
-        name: "projectTitle"
+        name: "title"
     },
     {
         type: "input",
@@ -26,8 +27,24 @@ const questions = [
     },
     {
         type: "input",
+        name: "usage",
+        message: "What does the user need to know about using the repo?",
+    },
+    {
+        type: "input",
         message: "Installation Instructions",
         name: "install",
+    },
+    {
+        type: "input",
+        name: "test",
+        message: "What command should be run to run tests?",
+        default: "npm test"
+    },
+    {
+        type: "input",
+        name: "contributing",
+        message: "What does the user need to know about contributing to the repo?",
     },
     {
         type: "input",
@@ -36,25 +53,17 @@ const questions = [
     },
 ];
 
-function getGitInfo() {
-    inquirer.prompt({
-        type: "input",
-        message: "Enter your GitHub username:",
-        name: "username",
-    }).then(function ({ username }) {
-        const queryUrl = `https://api.github.com/users/${username}?access_token=`;
-
-        axios.get(queryUrl).then(function (res) {
-            const profilePic = res.data.avatar_url;
-            const userEmail = res.data.email;
 
 
-            fs.writeFile("repos.txt", profilePic, userEmail, function (err) {
-                if (err) {
-                    throw err;
-                }
 
-            });
-        });
-    });
+function writeToFile(fileName, data) {
+    return fs.writeFileSync(path.join(process.cwd(), fileName), data);
 };
+
+function init() {
+    inquirer.prompt(questions).then((inquirerResponses) => {
+        writeToFile("README.md", generateMarkdown({ ...inquirerResponses }));
+    })
+};
+
+init();
